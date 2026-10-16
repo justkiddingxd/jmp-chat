@@ -36,6 +36,11 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      - name: Who publishes
+        run: npm whoami || echo "no NPM_TOKEN accepted, relying on trusted publishing"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       # NPM_TOKEN secret if set; without it npm uses trusted publishing (OIDC) configured on npmjs.com
       - run: npm publish
         env:
