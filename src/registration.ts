@@ -181,13 +181,17 @@ export class Registration {
   /**
    * activates with a referral / promo code: the account starts with the code's credit and needs no payment now.
    * `currency` picks the plan (USD or CAD)
+   *
+   * JMP asks for the code twice: "Activate JMP" takes the method (its `code` field is an optional referral
+   * code for paid methods), then "Enter Referral Code" asks for the code itself. both are answered here
    */
   async activateWithCode(code: string, opts: { currency?: string } = {}): Promise<RegistrationResult> {
     this.expect('activate')
     const fields = this.session.form?.fields ?? []
 
     const values: FormValues = { code }
-    if (fields.some(f => f.var === 'activation_method')) {
+    const choosingMethod = fields.some(f => f.var === 'activation_method')
+    if (choosingMethod) {
       if (!this.activationMethods.some(o => o.value === 'code')) {
         throw new JmpError('this number cannot be activated with a code (premium number?)')
       }
@@ -198,6 +202,12 @@ export class Registration {
 
     await this.session.submit(values)
     await this.settle()
+
+    // the method is chosen, now the separate code form
+    if (choosingMethod && this.stage === 'activate' && this.isCodeForm()) {
+      await this.session.submit({ code })
+      await this.settle()
+    }
 
     // asked again: the code was rejected or the plan needs something else
     if (this.stage === 'activate') {
@@ -240,6 +250,12 @@ export class Registration {
 
   cancel(): Promise<void> {
     return this.session.cancel()
+  }
+
+  /** "Enter Referral Code": a code field and no method or plan to choose */
+  private isCodeForm(): boolean {
+    const fields = this.session.form?.fields ?? []
+    return fields.some(f => f.var === 'code') && !fields.some(f => f.var === 'activation_method' || f.var === 'plan_name')
   }
 
   private pickPlan(currency?: string): string | null {

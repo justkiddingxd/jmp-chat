@@ -142,7 +142,7 @@ console.log(reg.activationMethods)              // [{ value: 'credit_card', labe
 const { urls } = await reg.activate('credit_card')
 ```
 
-The gateway choice and the fair-use notice are answered automatically. If JMP shows a step this library does not know, `reg.stage` is `'unknown'`: inspect `reg.step.form` and answer with `reg.submit(values)`. Always `reg.cancel()` a signup you abandon.
+The gateway choice and the fair-use notice are answered automatically. `activateWithCode()` also handles JMP's separate code step: after "Referral Code" is picked on the "Activate JMP" form, JMP asks for the code again on an "Enter Referral Code" form, and the library answers it; a code JMP refuses there rejects with `JmpCommandError` carrying JMP's text (e.g. "Not a valid referral code"). If JMP shows a step this library does not know, `reg.stage` is `'unknown'`: inspect `reg.step.form` and answer with `reg.submit(values)`. Always `reg.cancel()` a signup you abandon.
 
 ## Any other command
 
