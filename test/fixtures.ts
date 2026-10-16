@@ -8,6 +8,12 @@ export const REFERRAL = `<command xmlns="http://jabber.org/protocol/commands" se
 
 You will receive credit equivalent to one month of service once their payment clears.</note></command>`
 
+export const REFERRAL_INVITES = `<command xmlns="http://jabber.org/protocol/commands" sessionid="r/2" status="completed" node="referral codes"><x xmlns="jabber:x:data" type="result"><title>Unused Referral Codes</title><instructions>This code will provide credit equivalent to one month of service to anyone after they sign up and pay: TEST0REF
+
+These remaining codes are single use and give the person using them a free month of JMP service.
+
+You will receive credit equivalent to one month of service once their payment clears.</instructions><reported><field label="Invite Code" var="code"/></reported><item><field var="code"><value>FAKE0001</value></field></item><item><field var="code"><value>FAKE0002</value></field></item></x></command>`
+
 export const CREDIT_CARDS = `<command xmlns="http://jabber.org/protocol/commands" sessionid="c/1" status="executing" node="credit cards"><actions><next/><execute/></actions><x xmlns="jabber:x:oob"><url>https://pay.jmp.chat/me%5C40example.org@cheogram.com/credit_cards?customer_id=1</url><desc>Manage credit cards and settings</desc></x><note type="info">Manage credit cards and settings: https://pay.jmp.chat/me%5C40example.org@cheogram.com/credit_cards?customer_id=1</note></command>`
 
 export const ALT_TOP_UP = `<command xmlns="http://jabber.org/protocol/commands" sessionid="v/1" status="executing" node="alt top up"><actions><complete/><execute/></actions><x xmlns="jabber:x:data" type="form"><title>Buy Account Credit</title><instructions>Besides credit cards, we support payment by Bitcoin, postal mail, or in Canada by Interac e-Transfer.</instructions><field type="fixed"><value>Current balance: $0.0000</value></field><field label="Mailing Address" type="fixed" var="adr"><value>50 Ottawa St S, Unit 200, Kitchener, ON N2G3S7, Canada</value><desc>Make payable to Sopranica Telecom and include your Jabber ID in the mailing somewhere.</desc></field><field label="Action" type="list-single" var="http://jabber.org/protocol/commands#actions"><value>complete</value><option label="Done"><value>complete</value></option><option label="Add new Bitcoin address"><value>BTC</value></option><option label="Add new Bitcoin Cash address"><value>BCH</value></option><option label="Get single-use Monero address"><value>XMR</value></option><option label="Get single-use Ethereum address"><value>ETH</value></option></field></x></command>`

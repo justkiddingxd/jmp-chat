@@ -5,7 +5,7 @@
 A Node.js client for [JMP.chat](https://jmp.chat) accounts. Give it a JID that has a JMP number (or should get one) and you can:
 
 - send and receive SMS / MMS, with delivery receipts, errors and verification codes pulled out of the text
-- read the account: status, number, balance, renewal date, transactions, call history, referral code
+- read the account: status, number, balance, renewal date, transactions, call history, referral code and invites
 - top up: personal card payment page, charging a saved card, crypto addresses (BTC, BCH, XMR, ETH)
 - change settings: overage limit, voicemail, call forwarding, caller ID name, port-out PIN
 - sign a JID up for a new number: search, pick, activate with a promo code or a payment
@@ -80,8 +80,10 @@ Helpers: `phoneToJid(input)`, `jidToPhone(jid)`, `formatPhone('+15125550101')` â
 await jmp.account.info()           // null when the JID has no JMP number
 await jmp.account.transactions()   // [{ amount: { amount: -4.99, text: '-$4.9900' }, note, createdAt }]
 await jmp.account.calls()          // [{ start, direction, tel, status, duration, rate, charge }]
-await jmp.account.referralCode()   // { code: 'ABCD1234', text }
+await jmp.account.referralCode()   // { code: 'ABCD1234', invites: ['EF567890'], text }
 ```
+
+`referralCode()` returns the reusable referral code (a friend gets a month after paying, you get a month once their payment clears), the single-use invite codes JMP lists in its "Unused Referral Codes" table (each a free month; `[]` when there are none) and JMP's text as is.
 
 Money comes as `{ amount: number, text: string }`: `text` is exactly what JMP printed.
 

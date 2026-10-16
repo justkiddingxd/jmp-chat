@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JmpCommandError, JmpError, type Delivered, type GatewayNotice, type Sms, type SmsError } from '../src/index.ts'
 import { command, fakeJmp } from './fake.ts'
-import { ALT_TOP_UP, CONFIGURE_CALLS, CREDIT_CARDS, INFO, PLAN_SETTINGS, REFERRAL, TRANSACTIONS, XMR_ADDRESS } from './fixtures.ts'
+import { ALT_TOP_UP, CONFIGURE_CALLS, CREDIT_CARDS, INFO, PLAN_SETTINGS, REFERRAL, REFERRAL_INVITES, TRANSACTIONS, XMR_ADDRESS } from './fixtures.ts'
 
 test('incoming sms with otp, mms, gateway notice and offline delay', () => {
   const { conn, jmp } = fakeJmp()
@@ -81,7 +81,25 @@ test('account.info / transactions / referralCode', async () => {
   assert.equal(tx[1]!.amount!.amount, -4.99)
   assert.equal(tx[0]!.createdAt!.toISOString(), '2026-10-01T12:00:00.000Z')
 
-  assert.equal((await jmp.account.referralCode()).code, 'ABCD1234')
+  const referral = await jmp.account.referralCode()
+  assert.equal(referral.code, 'ABCD1234')
+  assert.deepEqual(referral.invites, [])
+  assert.match(referral.text, /^This code will provide credit/)
+})
+
+test('referralCode: result form with single-use invites', async () => {
+  const { jmp } = fakeJmp({ 'referral codes': () => REFERRAL_INVITES })
+  const referral = await jmp.account.referralCode()
+  assert.equal(referral.code, 'TEST0REF')
+  assert.deepEqual(referral.invites, ['FAKE0001', 'FAKE0002'])
+  assert.match(referral.text, /single use/)
+})
+
+test('referralCode: invites without a var fall back to the first column, no code', async () => {
+  const { jmp } = fakeJmp({
+    'referral codes': () => command('referral codes', 'completed', '<x xmlns="jabber:x:data" type="result"><title>Unused Referral Codes</title><reported><field label="Invite Code" var="invite"/></reported><item><field var="invite"><value> FAKE0003 </value></field></item></x>')
+  })
+  assert.deepEqual(await jmp.account.referralCode(), { code: null, invites: ['FAKE0003'], text: '' })
 })
 
 test('account.info is null without a JMP account', async () => {

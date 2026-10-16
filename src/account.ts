@@ -41,8 +41,11 @@ export interface CallRecord {
 }
 
 export interface ReferralCode {
+  /** reusable code: a friend gets a month after paying, you get a month once their payment clears */
   code: string | null
-  /** JMP's explanation of what the code gives */
+  /** single-use invite codes, each worth a free month; empty when JMP lists none */
+  invites: string[]
+  /** JMP's explanation of what the codes give (notes and form instructions) */
   text: string
 }
 
@@ -114,11 +117,21 @@ export class Account {
     }))
   }
 
-  /** your code that gives a friend a free month (and you credit once they pay) */
+  /**
+   * your code that gives a friend a free month (and you credit once they pay), plus single-use invites.
+   * JMP answers either with a note only, or with a result form: the same text as instructions
+   * and an "Invite Code" table
+   */
   async referralCode(): Promise<ReferralCode> {
     const step = await this.jmp.runCommand('referral codes')
-    const text = step.notes.map(n => n.text).join('\n')
-    const code = text.match(/:\s*([A-Z0-9]{4,})\s*$/m)?.[1] ?? null
-    return { code, text }
+    const text = [...step.notes.map(n => n.text), step.form?.instructions ?? '']
+      .map(t => t.trim())
+      .filter(Boolean)
+      .join('\n\n')
+    const code = text.match(/pay:\s*([A-Z0-9]{4,})/)?.[1] ?? text.match(/:\s*([A-Z0-9]{4,})\s*$/m)?.[1] ?? null
+    const invites = formRows(step.form)
+      .map(row => (row.code ?? Object.values(row)[0] ?? '').trim())
+      .filter(Boolean)
+    return { code, invites, text }
   }
 }
