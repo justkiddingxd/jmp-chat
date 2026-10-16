@@ -40,6 +40,8 @@ console.log(info?.tel, info?.balance?.amount, info?.expiresAt) // '+15125550199'
 await jmp.close()
 ```
 
+`connect()` also takes `service` (`xmpps://host:5223`, default: SRV lookup on the JID's domain), `resource`, `connectTimeout` (the whole login, default 30 s) and `xmppTimeout` (how long `@xmpp/client` waits for the stream header and each login step, default 15 s — its own 2 s default is too short for many servers, especially right after a previous session was dropped).
+
 ### Sharing an existing connection
 
 If your app already holds an `@xmpp/client` connection, attach to it instead of opening a second one. You manage the connection and the initial presence yourself:
@@ -160,7 +162,7 @@ await session.cancel()                          // always cancel what you do not
 
 ## Errors
 
-Everything rejects with `JmpError` (`.condition` holds the XMPP error condition, e.g. `not-authorized`, `item-not-found`). When JMP answers a command with an error note — a rejected code, a missing account — you get `JmpCommandError` with `.notes` and `.step`.
+Everything rejects with `JmpError` (`.condition` holds the XMPP error condition, e.g. `not-authorized`, `item-not-found`). A login that times out becomes `JmpError('<domain> did not answer in time')` with condition `remote-server-timeout`; a wrong password gives `not-authorized`. When JMP answers a command with an error note — a rejected code, a missing account — you get `JmpCommandError` with `.notes` and `.step`.
 
 ## Testing your code
 

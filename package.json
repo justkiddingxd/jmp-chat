@@ -1,6 +1,6 @@
 {
   "name": "jmp-chat",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "JMP.chat client over XMPP: SMS/MMS, account status and balance, top-ups, number signup, settings and any cheogram.com ad-hoc command",
   "keywords": [
     "jmp",

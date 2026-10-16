@@ -4,7 +4,7 @@ import type { Element } from '@xmpp/xml'
 import { Account } from './account.ts'
 import { CommandSession, listCommands, type CommandInfo, type CommandStep, DEFAULT_COMMAND_TIMEOUT } from './commands.ts'
 import type { XmppConnection } from './connection.ts'
-import { JmpError } from './errors.ts'
+import { JmpError, loginError } from './errors.ts'
 import { DEFAULT_GATEWAY, extractOtp, jidToPhone, phoneToJid } from './phone.ts'
 import { Registration } from './registration.ts'
 import { Settings } from './settings.ts'
@@ -14,6 +14,8 @@ const NS_OOB = 'jabber:x:oob'
 const NS_DELAY = 'urn:xmpp:delay'
 const NS_RECEIPTS = 'urn:xmpp:receipts'
 const NS_STANZAS = 'urn:ietf:params:xml:ns:xmpp-stanzas'
+
+const DEFAULT_XMPP_TIMEOUT = 15_000
 
 export interface Sms {
   /** stanza id, if the gateway set one */
@@ -84,6 +86,8 @@ export interface ConnectOptions extends JmpOptions {
   resource?: string
   /** how long to wait for login, ms (default 30s) */
   connectTimeout?: number
+  /** how long @xmpp/client waits for the stream header and each login step, ms (default 15s; the library's own default of 2s is too short for many servers) */
+  xmppTimeout?: number
 }
 
 export interface SendOptions {
@@ -129,7 +133,8 @@ export class JmpClient extends EventEmitter<JmpEvents> {
       domain,
       username: local,
       password: opts.password,
-      resource: opts.resource ?? 'jmp-chat'
+      resource: opts.resource ?? 'jmp-chat',
+      timeout: opts.xmppTimeout ?? DEFAULT_XMPP_TIMEOUT
     })
     const jmp = new JmpClient(xmpp, opts, xmpp)
 
@@ -148,15 +153,13 @@ export class JmpClient extends EventEmitter<JmpEvents> {
       await Promise.race([
         xmpp.start(),
         new Promise<never>((_, reject) => {
-          timer = setTimeout(() => reject(new JmpError(`${domain} did not answer`, 'remote-server-timeout')), opts.connectTimeout ?? 30_000)
+          timer = setTimeout(() => reject(new JmpError(`${domain} did not answer in time`, 'remote-server-timeout')), opts.connectTimeout ?? 30_000)
         })
       ])
     } catch (error) {
       await xmpp.stop().catch(() => {})
       jmp.detach()
-      const e = error as { name?: string, condition?: string }
-      if (e.name === 'SASLError') throw new JmpError('wrong JID or password', e.condition ?? 'not-authorized', { cause: error })
-      throw JmpError.from(error, `could not log in as ${opts.jid}`)
+      throw loginError(error, opts.jid, domain)
     } finally {
       clearTimeout(timer)
     }
