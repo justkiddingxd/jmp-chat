@@ -1,0 +1,59 @@
+{
+  "name": "jmp-chat",
+  "version": "0.1.0",
+  "description": "JMP.chat client over XMPP: SMS/MMS, account status and balance, top-ups, number signup, settings and any cheogram.com ad-hoc command",
+  "keywords": [
+    "jmp",
+    "jmp.chat",
+    "cheogram",
+    "xmpp",
+    "jabber",
+    "sms",
+    "mms",
+    "voip"
+  ],
+  "license": "MIT",
+  "author": "justkiddingxd (https://github.com/justkiddingxd)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justkiddingxd/jmp-chat.git"
+  },
+  "homepage": "https://github.com/justkiddingxd/jmp-chat#readme",
+  "bugs": {
+    "url": "https://github.com/justkiddingxd/jmp-chat/issues"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "typecheck": "tsc",
+    "test": "node --disable-warning=ExperimentalWarning --import tsx --test test/*.test.ts",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@xmpp/client": "^0.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/xmpp__client": "^0.14.1",
+    "ltx": "^3.1.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
